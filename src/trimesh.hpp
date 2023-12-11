@@ -31,53 +31,89 @@
 //	Vector Class
 //	Not complete, only has functions needed for this sample.
 //
-template <size_t D, class T> class Vec {
+template <size_t D, class T>
+requires(D == 3)
+class Vec {
 public:
 	// Constructors
 	Vec(){ data[0]=T(0); data[1]=T(0); data[2]=T(0); }
 	Vec(T x_, T y_, T z_){ data[0]=x_; data[1]=y_; data[2]=z_; }
 
 	// Data
-	T data[3];
+	T data[D];
 
 	// Functions
 	T operator[](int i) const { return data[i]; }
 	T& operator[](int i){ return data[i]; }
-	Vec<D,T> &operator += (const Vec<D,T> &x) {
-		for(size_t i=0; i<D; ++i){ data[i] += x[i]; }
+
+	Vec<D,T>&
+	operator+=(const Vec<D,T> &x)
+	{
+		for(size_t i=0; i<D; ++i) {
+			data[i] += x[i];
+		}
 		return *this;
 	}
+
+	Vec<D,T>&
+	operator*=(const T &x)
+	{
+		for (size_t i=0; i<D; ++i)
+			data[i] *= x;
+		return *this;
+	}
+
 	double len2() const { return this->dot(*this); } // squared length
 	double len() const { return sqrt(len2()); } // length
-	T dot(const Vec<D,T> &v) const {
+
+	T
+	dot(const Vec<D,T> &v) const
+	{
 		T r(0);
 		for(size_t i=0; i<D; ++i){ r += v[i] * data[i]; }
 		return r;
 	}
-	Vec<3,T> cross(const Vec<3,T> &v) const {
-		assert(D == 3); // only defined for 3 dims
+
+	Vec<3,T>
+	cross(const Vec<3,T> &v) const
+	requires(D == 3) // only defined for 3 dims
+	{
 		return Vec<3,T>(data[1]*v[2] - data[2]*v[1], data[2]*v[0] - data[0]*v[2], data[0]*v[1] - data[1]*v[0]);
 	}
-	void normalize() {
-		double l = len(); if( l<=0.0 ){ return; }
-		for(size_t i=0; i<D; ++i){ data[i] = data[i] / l; }
+
+	void normalize()
+	{
+		double l = len();
+		if (l <= 0.0)
+			return;
+
+		for (size_t i=0; i<D; ++i)
+			data[i] = data[i] / l;
 	}
 };
 
-template <size_t D, class T> static inline const Vec<D,T> operator-(const Vec<D,T> &v1, const Vec<D,T> &v2){
+template <size_t D, class T>
+static inline const Vec<D,T>
+operator-(const Vec<D,T> &v1, const Vec<D,T> &v2)
+{
 	Vec<D,T> r;
-	for(size_t i=0; i<D; ++i){ r[i] = v1[i]-v2[i]; }
+	for(size_t i=0; i<D; ++i)
+		r[i] = v1[i] - v2[i];
 	return r;
 }
 
-template <size_t D, class T> static inline const Vec<D,T> operator*(const Vec<D,T> &v, const T &x){
+template <size_t D, class T>
+static inline const Vec<D,T>
+operator*(const Vec<D,T> &v, const T &x)
+{
 	Vec<D,T> r;
-	for (size_t i=0; i<D; ++i){ r[i] = v[i]*x; }
+	for (size_t i=0; i<D; ++i)
+		r[i] = v[i] * x;
 	return r;
 }
 
-typedef Vec<3,float> Vec3f;
-typedef Vec<3,int> Vec3i;
+using Vec3f = Vec<3,float>;
+using Vec3i = Vec<3,int>;
 
 
 //
@@ -92,14 +128,14 @@ public:
 
 	// Compute normals if not loaded from obj
 	// or if recompute is set to true.
-	void need_normals( bool recompute=false );
+	void need_normals(bool recompute = false);
 
 	// Sets a default vertex color if
 	// they haven't been set.
-	void need_colors( Vec3f default_color = Vec3f(0.4,0.4,0.4) );
+	void need_colors(Vec3f default_color = Vec3f(0.4, 0.4, 0.4));
 
 	// Loads an OBJ file
-	bool load_obj( std::string file );
+	bool load_obj(std::string file);
 
 	// Prints details about the mesh
 	void print_details();
@@ -111,7 +147,8 @@ public:
 //	Implementation
 //
 
-void TriMesh::print_details(){
+void TriMesh::print_details()
+{
 	std::cout << "Vertices: " << vertices.size() << std::endl;
 	std::cout << "Normals: " << normals.size() << std::endl;
 	std::cout << "Colors: " << colors.size() << std::endl;
@@ -119,7 +156,8 @@ void TriMesh::print_details(){
 }
 
 
-void TriMesh::need_normals( bool recompute ){
+void TriMesh::need_normals( bool recompute )
+{
 	if( vertices.size() == normals.size() && !recompute ){ return; }
 	if( normals.size() != vertices.size() ){ normals.resize( vertices.size() ); }
 	std::cout << "Computing TriMesh normals" << std::endl;
@@ -142,18 +180,21 @@ void TriMesh::need_normals( bool recompute ){
 	for (int i = 0; i < nv; i++){ normals[i].normalize(); }
 } // end need normals
 
-void TriMesh::need_colors( Vec3f default_color ){
+void TriMesh::need_colors( Vec3f default_color )
+{
 	if( vertices.size() == colors.size() ){ return; }
 	else{ colors.resize( vertices.size(), default_color ); }
 } // end need colors
 
 // Function to split a string into multiple strings, seperated by delimeter
-static void split_str( char delim, const std::string &str, std::vector<std::string> *result ){
+static void split_str( char delim, const std::string &str, std::vector<std::string> *result )
+{
 	std::stringstream ss(str); std::string s;
 	while( std::getline(ss, s, delim) ){ result->push_back(s); }
 }
 
-bool TriMesh::load_obj( std::string file ){
+bool TriMesh::load_obj( std::string file )
+{
 
 	std::cout << "\nLoading " << file << std::endl;
 
