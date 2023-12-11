@@ -1,8 +1,11 @@
 # Set the minimum required version of cmake for this project
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.12)
 
 # Create a project called 'HW2b'
-project(HW2b)
+project(Assignment2B, C CXX)
+set(CMAKE_CXX_STANDARD 20)
+
+set(TARGET_NAME HW2b)
 
 # Find OpenGL, set link library names and include paths
 find_package(OpenGL REQUIRED)
@@ -22,37 +25,35 @@ add_definitions( -DMY_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/" )
 add_subdirectory(ext/glfw)
 
 # Make a list of all the source files
-set(
-    SOURCES
+set(SOURCES
     src/main.cpp
     ext/glad/src/glad.c
 )
 
 # Make a list of all the header files
-set(
-    INCLUDES
+set(INCLUDES
     src/shader.hpp
     src/trimesh.hpp
+    src/core/Vector3D.hpp
+    src/core/Matrix.hpp
 )
 
 # Make a list of all of the directories to look in when doing #include "whatever.h"
-set(
-    INCLUDE_DIRS
+set(INCLUDE_DIRS
     ext/
     ext/glfw/include
     ext/glad/include
 )
 
 # Make a list of the libraries
-set(
-    LIBS
+set(LIBS
     glfw
     ${OPENGL_LIBRARIES}
 )
 
 # Define what we are trying to produce here (an executable),
 # and what items are needed to create it (the header and source files)
-add_executable(${PROJECT_NAME} ${SOURCES} ${INCLUDES})
+add_executable(${TARGET_NAME} ${SOURCES} ${INCLUDES})
 
 # Tell cmake which directories to look in when you #include a file
 # Equivalent to the "-I" option for g++
@@ -60,7 +61,7 @@ include_directories(${INCLUDE_DIRS})
 
 # Tell cmake which libraries to link to
 # Equivalent to the "-l" option for g++
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+target_link_libraries(${TARGET_NAME} PRIVATE ${LIBS})
 
 # For Visual Studio only
 if (MSVC)
